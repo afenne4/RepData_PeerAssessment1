@@ -1,0 +1,41 @@
+---
+title: "Reproducible Research Course Project 1"
+author: "Alex Fennell"
+date: "1/7/2022"
+output: html_document
+---
+
+```{r libraries, message=FALSE}
+    library(dplyr)
+    library(ggplot2)
+```
+
+## Loading and preprocessing the data
+
+```{r download data}
+fileurl<-"https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+if (!file.exists("CP1data.zip")){
+    download.file(fileurl,"CP1data.zip",method="curl")
+    unzip("CP1data.zip")
+}
+act<-read.csv("activity.csv")
+str(act)
+act$date<-as.Date(act$date, "%Y%m%d")
+```
+
+
+## What is mean total number of steps taken per day?
+```{r mean steps}
+
+```
+
+
+## What is the average daily activity pattern?
+
+
+
+## Imputing missing values
+
+
+
+## Are there differences in activity patterns between weekdays and weekends?
