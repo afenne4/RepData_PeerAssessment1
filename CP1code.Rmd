@@ -105,3 +105,26 @@ The mean value for the imputed data set has not changed, however the median
 did change to the same value as the median. 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+
+```{r make weekday factor}
+actimpute<-actimpute%>%
+    mutate(wkdy=ifelse(weekdays(date)=="Saturday" | weekdays(date)=="Sunday",
+                        "weekend","weekday"))
+actimpute$wkdy<-as.factor(actimpute$wkdy)
+
+```
+
+```{r}
+avgimpsteps <- actimpute%>%
+            group_by(interval,wkdy)%>%
+            summarise(mnstp=mean(steps,na.rm=TRUE))
+ts2<-ggplot(avgimpsteps,aes(interval,mnstp))
+ts2+facet_wrap(.~wkdy)+
+geom_line()+
+    labs(title="Average Number of Steps for Weekdays vs. Weekends",
+         y="Average Number of Steps",
+         x="5-minute time interval")+
+        theme(plot.title=element_text(hjust=.5))
+
+```
