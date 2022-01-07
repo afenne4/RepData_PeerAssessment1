@@ -110,7 +110,7 @@ did change to the same value as the median.
 ```{r make weekday factor}
 actimpute<-actimpute%>%
     mutate(wkdy=ifelse(weekdays(date)=="Saturday" | weekdays(date)=="Sunday",
-                        "weekend","weekday"))
+                        "Weekend","Weekday"))
 actimpute$wkdy<-as.factor(actimpute$wkdy)
 
 ```
