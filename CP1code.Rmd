@@ -43,14 +43,30 @@ totalsteps<-act %>%
 ```
 
 ```{r mean steps}
-    mean(act$steps,na.rm=TRUE)
+    totalsteps%>%
+    summarise(mean(totsteps),median(totsteps))
 ```
 
 
 ## What is the average daily activity pattern?
+```{r time series plot}
+avgsteps <- act%>%
+            group_by(interval)%>%
+            na.omit(steps) %>%
+            summarise(mnstp=mean(steps))
+ts1<-ggplot(avgsteps,aes(interval,mnstp))
+ts1+geom_line()+
+    labs(title="Average Number of Steps Across Days",
+         y="Average Number of Steps",
+         x="5-minute time interval")+
+        theme(plot.title=element_text(hjust=.5))
 
+```
+This means that the time interval the contain the maximum average steps is.
+```{r max steps time interval}
+avgsteps[which(max(avgsteps$mnstp)==avgsteps$mnstp),1]
 
-
+```
 ## Imputing missing values
 
 
