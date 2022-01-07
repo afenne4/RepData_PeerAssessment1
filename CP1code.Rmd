@@ -19,14 +19,31 @@ if (!file.exists("CP1data.zip")){
     unzip("CP1data.zip")
 }
 act<-read.csv("activity.csv")
+act$date<-as.Date(act$date, format="%Y-%m-%d")
 str(act)
-act$date<-as.Date(act$date, "%Y%m%d")
+
+```
+With the data in the desired format now, it is necessary to get a quick idea of
+the data using summary
+```{r}
+summary(act)
+```
+This shows a good amount of missing data ~13% so to calculate the mean it is 
+necessary to remove the NA values
+## What is mean total number of steps taken per day?
+```{r}
+totalsteps<-act %>%
+    group_by(date) %>%
+    na.omit(steps) %>%
+    summarise(totsteps=sum(steps))
+    qplot(totalsteps$totsteps,
+          main="Total Steps Taken Each Day",
+          xlab="Total Steps")+
+    theme(plot.title=element_text(hjust=.5))
 ```
 
-
-## What is mean total number of steps taken per day?
 ```{r mean steps}
-
+    mean(act$steps,na.rm=TRUE)
 ```
 
 
