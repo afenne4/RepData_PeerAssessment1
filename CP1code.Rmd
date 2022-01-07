@@ -30,8 +30,9 @@ summary(act)
 ```
 This shows a good amount of missing data ~13% so to calculate the mean it is 
 necessary to remove the NA values
+
 ## What is mean total number of steps taken per day?
-```{r}
+```{r histogram of step, message=FALSE}
 totalsteps<-act %>%
     group_by(date) %>%
     na.omit(steps) %>%
@@ -52,8 +53,7 @@ totalsteps<-act %>%
 ```{r time series plot}
 avgsteps <- act%>%
             group_by(interval)%>%
-            na.omit(steps) %>%
-            summarise(mnstp=mean(steps))
+            summarise(mnstp=mean(steps,na.rm=TRUE))
 ts1<-ggplot(avgsteps,aes(interval,mnstp))
 ts1+geom_line()+
     labs(title="Average Number of Steps Across Days",
@@ -62,13 +62,46 @@ ts1+geom_line()+
         theme(plot.title=element_text(hjust=.5))
 
 ```
-This means that the time interval the contain the maximum average steps is.
+
+This means that the time interval that contains the maximum average steps is
 ```{r max steps time interval}
 avgsteps[which(max(avgsteps$mnstp)==avgsteps$mnstp),1]
-
 ```
 ## Imputing missing values
 
+### Number of missing values
+```{r}
+sum(is.na(act))
+```
+To fill in the missing values I am going to use the mean steps across all days
+for the corresponding 5 minute interval
 
+```{r impute data}
+actimpute<-act%>%
+    group_by(interval)%>%
+    mutate(steps=ifelse(is.na(steps),mean(steps,na.rm=TRUE),steps))
+
+```
+
+### Histogram of imputed data set
+```{r}
+imputetotalsteps<-actimpute %>%
+    group_by(date) %>%
+    summarise(tsteps=sum(steps))
+    qplot(imputetotalsteps$tsteps,
+          main="Total Steps Taken Each Day",
+          xlab="Total Steps")+
+    theme(plot.title=element_text(hjust=.5))
+```
+
+### Mean and Median of steps each day with imputed data set
+```{r mean and median of imputed data}
+imputetotalsteps%>%
+    summarise(mean(tsteps),median(tsteps))
+
+```
+
+The mean value for the imputed data set has not changed, however the median 
+did change to the same value as the median. 
 
 ## Are there differences in activity patterns between weekdays and weekends?
