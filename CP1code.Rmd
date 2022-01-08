@@ -1,7 +1,5 @@
 ---
 title: "Reproducible Research Course Project 1"
-author: "Alex Fennell"
-date: "1/7/2022"
 output: html_document
 ---
 
@@ -43,6 +41,7 @@ totalsteps<-act %>%
     theme(plot.title=element_text(hjust=.5))
 ```
 
+### Mean and median total steps taken each day
 ```{r mean steps}
     totalsteps%>%
     summarise(mean(totsteps),median(totsteps))
@@ -84,7 +83,7 @@ actimpute<-act%>%
 ```
 
 ### Histogram of imputed data set
-```{r}
+```{r Impute Histogram, message=FALSE}
 imputetotalsteps<-actimpute %>%
     group_by(date) %>%
     summarise(tsteps=sum(steps))
@@ -102,7 +101,14 @@ imputetotalsteps%>%
 ```
 
 The mean value for the imputed data set has not changed, however the median 
-did change to the same value as the median. 
+did change to the same value as the mean. As can be observed with the 
+histogram, there is a spike in frequency of the total steps taken each day
+in the center of the histogram for the imputed data set compared to the original.
+Since the missing data comes from entire days, the missing days will all have the same 
+imputed values. That is why there is a higher frequency of values observed in the
+center of the histogram. The imputation adds 8 more observations which will have
+the same total number of steps. The other days did not have missing data, so the
+total steps for the other days will not be affected by the imputation.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
