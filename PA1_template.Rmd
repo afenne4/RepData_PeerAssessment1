@@ -1,25 +1,136 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "Reproducible Research Course Project 1"
+output: html_document
 ---
 
+```{r libraries, message=FALSE}
+    library(dplyr)
+    library(ggplot2)
+```
 
 ## Loading and preprocessing the data
 
+```{r download data}
+fileurl<-"https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+if (!file.exists("CP1data.zip")){
+    download.file(fileurl,"CP1data.zip",method="curl")
+    unzip("CP1data.zip")
+}
+act<-read.csv("activity.csv")
+act$date<-as.Date(act$date, format="%Y-%m-%d")
+str(act)
 
+```
+With the data in the desired format now, it is necessary to get a quick idea of
+the data using summary
+```{r}
+summary(act)
+```
+This shows a good amount of missing data ~13% so to calculate the mean it is 
+necessary to remove the NA values
 
 ## What is mean total number of steps taken per day?
+```{r histogram of step, message=FALSE}
+totalsteps<-act %>%
+    group_by(date) %>%
+    na.omit(steps) %>%
+    summarise(totsteps=sum(steps))
+    qplot(totalsteps$totsteps,
+          main="Total Steps Taken Each Day",
+          xlab="Total Steps")+
+    theme(plot.title=element_text(hjust=.5))
+```
 
+### Mean and median total steps taken each day
+```{r mean steps}
+    totalsteps%>%
+    summarise(mean(totsteps),median(totsteps))
+```
 
 
 ## What is the average daily activity pattern?
+```{r time series plot}
+avgsteps <- act%>%
+            group_by(interval)%>%
+            summarise(mnstp=mean(steps,na.rm=TRUE))
+ts1<-ggplot(avgsteps,aes(interval,mnstp))
+ts1+geom_line()+
+    labs(title="Average Number of Steps Across Days",
+         y="Average Number of Steps",
+         x="5-minute time interval")+
+        theme(plot.title=element_text(hjust=.5))
 
+```
 
-
+This means that the time interval that contains the maximum average steps is
+```{r max steps time interval}
+avgsteps[which(max(avgsteps$mnstp)==avgsteps$mnstp),1]
+```
 ## Imputing missing values
 
+### Number of missing values
+```{r}
+sum(is.na(act))
+```
+To fill in the missing values I am going to use the mean steps across all days
+for the corresponding 5 minute interval
 
+```{r impute data}
+actimpute<-act%>%
+    group_by(interval)%>%
+    mutate(steps=ifelse(is.na(steps),mean(steps,na.rm=TRUE),steps))
+
+```
+
+### Histogram of imputed data set
+```{r Impute Histogram, message=FALSE}
+imputetotalsteps<-actimpute %>%
+    group_by(date) %>%
+    summarise(tsteps=sum(steps))
+    qplot(imputetotalsteps$tsteps,
+          main="Total Steps Taken Each Day",
+          xlab="Total Steps")+
+    theme(plot.title=element_text(hjust=.5))
+```
+
+### Mean and Median of steps each day with imputed data set
+```{r mean and median of imputed data}
+imputetotalsteps%>%
+    summarise(mean(tsteps),median(tsteps))
+
+```
+
+The mean value for the imputed data set has not changed, however the median 
+did change to the same value as the mean. As can be observed with the 
+histogram, there is a spike in frequency of the total steps taken each day
+in the center of the histogram for the imputed data set compared to the original.
+Since the missing data comes from entire days, the missing days will all have the same 
+imputed values. That is why there is a higher frequency of values observed in the
+center of the histogram. The imputation adds 8 more observations which will have
+the same total number of steps. The other days did not have missing data, so the
+total steps for the other days will not be affected by the imputation.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+
+```{r make weekday factor}
+actimpute<-actimpute%>%
+    mutate(wkdy=ifelse(weekdays(date)=="Saturday" | weekdays(date)=="Sunday",
+                        "Weekend","Weekday"))
+actimpute$wkdy<-as.factor(actimpute$wkdy)
+
+```
+
+```{r}
+avgimpsteps <- actimpute%>%
+            group_by(interval,wkdy)%>%
+            summarise(mnstp=mean(steps,na.rm=TRUE))
+ts2<-ggplot(avgimpsteps,aes(interval,mnstp))
+ts2+facet_wrap(.~wkdy)+
+geom_line()+
+    labs(title="Average Number of Steps for Weekdays vs. Weekends",
+         y="Average Number of Steps",
+         x="5-minute time interval")+
+        theme(plot.title=element_text(hjust=.5))
+
+```
